@@ -12,8 +12,3 @@
   - Distribution of loads for one realization
     - plot error over y, see what happens 
       - is there change with regards to y ? 
-      
-      
-  - Unexplained variance 
-    
-  
