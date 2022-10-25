@@ -4,11 +4,8 @@ from loads import MysteriousLoadFunc
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 
-def generate_train_predict():
 
-    #%% GENERATE DATA
-    x = rosenblatt(10000)            # input = wind = [mu, sigma, alpha]
-    y = MysteriousLoadFunc(x)  # output = load
+def model(x, y):
 
     #%% NORMALIZE DATA
     x_norm = (x - x.mean(axis=0)) / x.std(axis=0)
