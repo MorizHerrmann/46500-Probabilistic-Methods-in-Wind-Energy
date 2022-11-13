@@ -1,1 +1,5 @@
 46500_Probabilistic_Methods_in_Wind_Energy_Assignment1.ipynb
+*.pdf
+*.png
+*__pycache__*
+*ipynb_checkpoints*
