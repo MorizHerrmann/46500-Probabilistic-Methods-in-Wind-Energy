@@ -7,6 +7,9 @@ Created on Sun Nov 13 10:37:32 2022
 
 import pandas as pd
 import datetime as dt
+%matplotlib
+import matplotlib.pyplot as plt
+
 
 #%% Import data
 
@@ -44,12 +47,23 @@ df_signals_failed = df_signals_failed[relevant_features]
 
 #%% Look at relevant features "around" failure time step.
 
-failure_id = 17
+failure_id = 6
 
 # for example
 turbine = df_failed_component['Turbine_ID'].loc[failure_id]
 time = df_failed_component['Timestamp'].loc[failure_id]
 
-Dt = dt.timedelta(days=6, hours=1)
+df_turbine = df_signals_failed.loc[turbine]
+df_values = df_turbine['Gen_SlipRing_Temp_Avg'].values
 
-df_signals_failed['Gen_Bear_Temp_Avg'].loc[turbine].loc[time-Dt:time+Dt].plot()
+# Dt = dt.timedelta(days=30)
+# mask = (time-Dt < df_turbine.index) & (df_turbine.index < time+Dt)
+# df_turbine[['Prod_LatestAvg_TotActPwr']].iloc[mask].plot()
+
+plt.figure()
+plt.plot(df_turbine.index, values, '.')
+plt.show()
+
+failure_times = df_failed_component['Timestamp'][df_failed_component['Turbine_ID'] == 'T06'].values
+
+plt.vlines(failure_times, min(values), max(values), 'r')
