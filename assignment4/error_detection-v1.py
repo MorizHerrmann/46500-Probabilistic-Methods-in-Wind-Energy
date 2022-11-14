@@ -7,7 +7,7 @@ Created on Sun Nov 13 10:37:32 2022
 
 import pandas as pd
 import datetime as dt
-
+import matplotlib.pyplot as plt
 #%% Import data
 
 # import failure data
@@ -52,4 +52,6 @@ time = df_failed_component['Timestamp'].loc[failure_id]
 
 Dt = dt.timedelta(days=6, hours=1)
 
-df_signals_failed['Gen_Bear_Temp_Avg'].loc[turbine].loc[time-Dt:time+Dt].plot()
+ax = df_signals_failed['Gen_Bear_Temp_Avg'].loc[turbine].loc[time-Dt:time+Dt].plot()
+ax.set_title("Generator bearing avg temperature")
+plt.show()
