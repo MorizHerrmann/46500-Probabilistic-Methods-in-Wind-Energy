@@ -16,8 +16,8 @@ import pickle
 figure_path = "./figures/"
 
 
-time_plots = True
-pairplots=False
+time_plots  = True 
+pairplots   = True
 
 # import failure data
 df_failures = pd.read_csv('data/wind-farm-1-failures-training.csv', sep=';')
@@ -79,6 +79,7 @@ if not os.path.isdir(figure_path): # create directory to store figs
     os.mkdir(figure_path)
 
 if time_plots:
+    print("generating time plots")
     for i,feature1 in enumerate(relevant_features):
         #breakpoint()
         plotpath = (figure_path + feature1)
@@ -148,22 +149,39 @@ if time_plots:
 # pipe frames into seaborn
 
 if pairplots:
+    print("generating pair plots")
+    # choose a smaller subset of features
+    current_features = ['Gen_Bear_Temp_Avg', 
+                         'Gen_Phase1_Temp_Avg', 
+                         'Gen_Phase2_Temp_Avg',
+                         'Gen_Phase3_Temp_Avg']#,
+                         #'Prod_LatestAvg_ActPwrGen0',
+                         #'Gen_SlipRing_Temp_Avg']
+
     seaborn_path = figure_path + str("/seaborn") # path to save all the seaborn plots
 
     if not os.path.isdir(seaborn_path) : # make sure the directory exists
         os.mkdir(seaborn_path)
 
     # choose a subset of the df. Features can be selected here
-    time_section1 = df_signals_failed.loc[turbine].loc[mask1].sort_index()[relevant_features[0:2]] 
-    time_section2 = df_signals_failed.loc[turbine].loc[mask2].sort_index()[relevant_features[0:2]]
-    time_section3 = df_signals_failed.loc[turbine].loc[mask3].sort_index()[relevant_features[0:2]]
-
+    time_section1 = df_signals_failed.loc[turbine].loc[mask1].sort_index()[current_features] 
+    time_section2 = df_signals_failed.loc[turbine].loc[mask2].sort_index()[current_features]
+    time_section3 = df_signals_failed.loc[turbine].loc[mask3].sort_index()[current_features]
+    
     # add time index as column for plotting. maybe there is a more straighforward way to achieve that.
     time_section1["t_index"] = time_section1.index
     time_section2["t_index"] = time_section2.index
     time_section3["t_index"] = time_section3.index
     #breakpoint()
-    fig_sb = sb.pairplot(time_section1, hue ="t_index",palette="RdBu") # do a pairplot and use timeindex for coloring
-    current_figure_path = f"{seaborn_path}/f0_2_t6d.pickle" 
-    pickle.dump(fig_sb, open(current_figure_path, 'wb'))# save the figure as a python pickle
+    time_sections = [time_section1, time_section2, time_section3] # list of all time sections to loop over
+    print("start creating seaborn plots")
+    for i,time in enumerate(["6d","1d","6h"]):
+        print(f"start plotting for dt = {time}")
+        fig_sb = sb.pairplot(time_sections[i], hue ="t_index",palette="RdBu") # do a pairplot and use timeindex for coloring
+        current_figure_path = f"{seaborn_path}/pairplot_t_{time}.pickle" 
+        print("done creating figure. \nCreate files")
+        pickle.dump(fig_sb, open(current_figure_path, 'wb'))# save the figure as a python pickle
+        plt.savefig(f"{seaborn_path}/pairplot_t_{time}.pdf", bbox_inches='tight' ) 
+        print("files created")
+        plt.close('all')
 
