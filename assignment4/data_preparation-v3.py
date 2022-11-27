@@ -28,6 +28,7 @@ dt_before = dt.timedelta(weeks = 4*2)
 dt_after  = dt.timedelta(weeks = 4*1)
 
 df_T_normal = [0]*len(df_T)
+df_T_fail = [0]*len(df_T)
 for i, turbine in enumerate(turbines):
     
     # find all failure timestamps for that turb
@@ -49,6 +50,9 @@ for i, turbine in enumerate(turbines):
     # yields all the clean data now
     df_T_normal[i] = df_T[i].loc[~fail_mask & ~idle_mask] 
     
+    # data with failure for testing
+    df_T_fail[i] = df_T[i].loc[fail_mask & ~idle_mask] 
+    
     print()
     print(turbine)
     print(f'Old length:\t{len(df_T[i]):.0f}')
@@ -62,5 +66,5 @@ for i, turbine in enumerate(turbines):
 for i, turbine in enumerate(turbines):
     
     df_T[i].to_csv('data/' + turbine + '_full.csv', sep=';')
-    df_T_normal[i].to_csv('data/traindata/' + turbine + '_normal.csv', sep=';')
-    
+    # df_T_normal[i].to_csv('data/traindata/' + turbine + '_normal.csv', sep=';')
+    df_T_fail[i].to_csv('data/testdata/' + turbine + '_fail.csv', sep=';')
