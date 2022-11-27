@@ -1,0 +1,13 @@
+Target:
+Prod_Latest_Avg_TotActPwr
+
+Features:
+Grd_Prod_CurPhase1_Avg
+...2
+...3
+Amb_WindSpeed_Avg
+Gen_Phase_1_Temp_Avg
+...2
+...3
+Amb_Temp_Avg
+Gen_RPM_Avg
