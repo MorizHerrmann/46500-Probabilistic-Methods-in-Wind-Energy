@@ -9,10 +9,23 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
+#%% Inputs
+
+# # train: 
+# directory = 'data/traindata/'
+# extension = 'normal'
+
+# test:
+directory = 'data/testdata/'
+attribute = 'fail'
+
+determine_integral_timescale = False
+
 #%% Load data
 
+
 turbines = ['T01', 'T06', 'T07', 'T09', 'T11']
-df_T = [pd.read_csv('data/traindata/' + turbine + '_normal.csv', sep=';') for turbine in turbines]
+df_T = [pd.read_csv(directory + turbine + '_' + attribute + '.csv', sep=';') for turbine in turbines]
 for i in range(len(turbines)):
     df_T[i]['Timestamp'] = pd.to_datetime(df_T[i]['Timestamp'])
 
@@ -29,55 +42,57 @@ features = ['Grd_Prod_CurPhse1_Avg',
 
 #%% Calculate auto-correlation and integral time scale
 
-def autocorrelation(x):
-    lag = 0; autocorr = [1];
-    while autocorr[-1] > 0:
-        lag += 1
-        autocorr.append(x.autocorr(lag))
-    return autocorr
+if determine_integral_timescale:
 
-
-def crosscorrelation(x, y):
-    lag = 0; crosscorr = [1];
-    while crosscorr[-1] > 0:
-        lag += 1
-        crosscorr.append(x.corr(y.shift(lag)))
-    return crosscorr
-
-
-target_integral_timescale = np.zeros(len(turbines))
-feature_integral_timescale = np.zeros((len(turbines), len(features)))
-for i, turbine in enumerate(turbines):
-    y = df_T[i][target]
-    X = df_T[i][features]
+    def autocorrelation(x):
+        lag = 0; autocorr = [1];
+        while autocorr[-1] > 0:
+            lag += 1
+            autocorr.append(x.autocorr(lag))
+        return autocorr
     
-    # target
-    autocorr = autocorrelation(y)
+    
+    def crosscorrelation(x, y):
+        lag = 0; crosscorr = [1];
+        while crosscorr[-1] > 0:
+            lag += 1
+            crosscorr.append(x.corr(y.shift(lag)))
+        return crosscorr
+    
+    
+    target_integral_timescale = np.zeros(len(turbines))
+    feature_integral_timescale = np.zeros((len(turbines), len(features)))
+    for i, turbine in enumerate(turbines):
+        y = df_T[i][target]
+        X = df_T[i][features]
         
-    # plt.figure(); plt.plot(autocorr)
-    # plt.grid(); plt.xlabel("Lag [steps]"); plt.ylabel("Auto-correlation of Power")
-    target_integral_timescale[i] = np.trapz(autocorr)
-    
-    # features
-    for j, feature in enumerate(features):
-        crosscorr = crosscorrelation(y, X[feature])
+        # target
+        autocorr = autocorrelation(y)
+            
+        # plt.figure(); plt.plot(autocorr)
+        # plt.grid(); plt.xlabel("Lag [steps]"); plt.ylabel("Auto-correlation of Power")
+        target_integral_timescale[i] = np.trapz(autocorr)
         
-        # plt.figure(); plt.plot(crosscorr)
-        # plt.grid(); plt.xlabel("Lag [steps]"); plt.ylabel("Cross-correlation of power with " + feature)
-        feature_integral_timescale[i, j] = np.trapz(crosscorr)
+        # features
+        for j, feature in enumerate(features):
+            crosscorr = crosscorrelation(y, X[feature])
+            
+            # plt.figure(); plt.plot(crosscorr)
+            # plt.grid(); plt.xlabel("Lag [steps]"); plt.ylabel("Cross-correlation of power with " + feature)
+            feature_integral_timescale[i, j] = np.trapz(crosscorr)
+        
+    #%% Integral timescale
     
-#%% Integral timescale
-
-# Better overshoot than underestimate.
-# So the maximum amount of information is retained. 
-
-plt.figure()
-bins = np.linspace(0, 200, round(200/10+1))
-plt.hist(feature_integral_timescale.flatten(), bins)
-
-plt.hist(target_integral_timescale, bins)
-plt.xticks(bins, rotation=45); plt.xlabel("Integral Timescales"); plt.ylabel("Count")
-plt.legend("Features", "Target")
+    # Better overshoot than underestimate.
+    # So the maximum amount of information is retained. 
+    
+    plt.figure()
+    bins = np.linspace(0, 200, round(200/10+1))
+    plt.hist(feature_integral_timescale.flatten(), bins)
+    
+    plt.hist(target_integral_timescale, bins)
+    plt.xticks(bins, rotation=45); plt.xlabel("Integral Timescales"); plt.ylabel("Count")
+    plt.legend("Features", "Target")
 
 integral_timescale = 130    # covers everything but outliers
 
@@ -90,18 +105,18 @@ df_T_mvAvg = [0] * len(turbines)
 for i, turbine in enumerate(turbines):
     df_T_mvAvg[i] = df_T[i][relevant_features].rolling(integral_timescale).mean()
     df_T_mvAvg[i]['Timestamp'] = df_T[i]['Timestamp']
-    df_T_mvAvg[i].to_csv('data/traindata/' + turbine + '_normal_mvAvg.csv', sep=';')
+    df_T_mvAvg[i].to_csv(directory + turbine + '_' + attribute + '_mvAvg.csv', sep=';')
 
 #%% Test: !!! Kills my GPU !!!
 
-import pandas as pd
-full = pd.read_csv('data/T01_full.csv', sep=';')
-normal = pd.read_csv('data/traindata/T01_normal.csv', sep=';')
-mvAvg = pd.read_csv('data/traindata/T01_normal_mvAvg.csv', sep=';')
+# import pandas as pd
+# full = pd.read_csv('data/T01_full.csv', sep=';')
+# normal = pd.read_csv('data/traindata/T01_normal.csv', sep=';')
+# mvAvg = pd.read_csv('data/traindata/T01_normal_mvAvg.csv', sep=';')
 
-import matplotlib.pyplot as plt
-plt.figure()
-plt.plot(full.Timestamp, full.Prod_LatestAvg_TotActPwr, '.')
-plt.plot(normal.Timestamp, normal.Prod_LatestAvg_TotActPwr, '.')
-plt.plot(mvAvg.Timestamp, mvAvg.Prod_LatestAvg_TotActPwr, '.')
-plt.xlabel('Timestamp'); plt.ylabel('Active Power'); plt.grid()
+# import matplotlib.pyplot as plt
+# plt.figure()
+# plt.plot(full.Timestamp, full.Prod_LatestAvg_TotActPwr, '.')
+# plt.plot(normal.Timestamp, normal.Prod_LatestAvg_TotActPwr, '.')
+# plt.plot(mvAvg.Timestamp, mvAvg.Prod_LatestAvg_TotActPwr, '.')
+# plt.xlabel('Timestamp'); plt.ylabel('Active Power'); plt.grid()
