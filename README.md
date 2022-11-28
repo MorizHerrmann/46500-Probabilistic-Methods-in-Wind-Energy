@@ -16,9 +16,7 @@ Data selection:
 		
 		b) Test: both normal and failure behavior
 
-Target variable: (Trial and Error)
-
-	A) Power? (Most interesting for wind turbines)
+Target variable: Gen_Phase1_Temp_Avg
 	
 	B) Each a model for all phases. If the difference between the phases is too big -> failure)
 	
@@ -30,7 +28,7 @@ Target variable: (Trial and Error)
 		
 		4) Active power
 
-Feature selection:
+Feature selection: Gen_Phase2_Temp_Avg, Gen_Phase3_Temp_Avg
 
 	A) Correlation
 	
@@ -60,9 +58,21 @@ Model:
 	
 	C) Random Forest with sklearn
 
-Training, Validation, ...	
+Training, Validation:
+	
+	1) On the normal data the RMSE is low.
+	
+	2) On other data the RMSE is high.
+	
+Testing:
 
-Deadline extension: Saturday 03/12 23:59pm
+	1) Plot the Residual (=Pred. - True) over the whole time series. Can we see how it increases?
+	
+	2) Make a histogram of the residual (normal, all, failure, ...)
+	
+	3) Probably there are fluctuations of the residual -> Moving average!
+
+Deadline extension: Saturday 03/12 21pm
 
 
 
